@@ -28,6 +28,9 @@
 #include <ilm/ilm_control.h>
 #include <ilm/ilm_common.h>
 
+#include <core/dbus/dbus.h>
+#include <core/dbus/message.h>
+
 #include "WlEglSurface.hpp"
 
 class AglBeLauncher
@@ -44,10 +47,17 @@ private:
 	bool mIsOnTop;
 	XenBackend::Log mLog;
 
-	std::thread mThread;
+	std::thread mPollThread;
+
+	core::dbus::Bus::Ptr mBus;
+	core::dbus::Object::Ptr mDBusObject;
+	std::thread mDBusThread;
+
 
 	void init();
 	void release();
+
+	void sendUserEvent(uint32_t event);
 
 	void run();
 };

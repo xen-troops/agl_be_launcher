@@ -21,15 +21,23 @@
 
 #include "AglBeLauncher.hpp"
 
+#include <core/dbus/asio/executor.h>
+
 #include <unistd.h>
 
 #include <xen/be/Exception.hpp>
 
+#include "DBusItfControl.hpp"
+
+using std::make_shared;
 using std::this_thread::sleep_for;
 using std::thread;
 using std::chrono::milliseconds;
 
 using XenBackend::Exception;
+
+using namespace core::dbus;
+using namespace com::epam;
 
 /*******************************************************************************
  * AglBeLauncher
@@ -78,7 +86,17 @@ void AglBeLauncher::init()
 
 	mSurface.createSurface(mSurfaceId, 1080, 1487);
 
-	mThread = thread(&AglBeLauncher::run, this);
+	mBus = make_shared<Bus>(WellKnownBus::session);
+	mBus->install_executor(asio::make_executor(mBus));
+
+	auto service = Service::use_service_or_throw_if_not_available(mBus, "com.epam.DeviceManager");
+
+	mDBusThread = thread([this]() { mBus->run(); });
+
+	mDBusObject = service->object_for_path(
+			types::ObjectPath(DisplayManager::Control::default_path()));
+
+	mPollThread = thread(&AglBeLauncher::run, this);
 }
 
 void AglBeLauncher::release()
@@ -87,41 +105,70 @@ void AglBeLauncher::release()
 
 	mTerminate = true;
 
-	if (mThread.joinable())
+	if (mPollThread.joinable())
 	{
-		mThread.join();
+		mPollThread.join();
 	}
+
+	if (mBus)
+	{
+		mBus->stop();
+	}
+
+	if (mDBusThread.joinable())
+	{
+		mDBusThread.join();
+	}
+
 //	ilm_destroy();
+}
+void AglBeLauncher::sendUserEvent(uint32_t event)
+{
+	Result<void> result =
+			mDBusObject->transact_method<
+				DisplayManager::Control::userEvent, void>(event);
 }
 
 void AglBeLauncher::run()
 {
 	while(!mTerminate)
 	{
-		sleep_for(milliseconds(100));
-
-		 t_ilm_int length;
-		 t_ilm_layer* layers;
-
-		if (ilm_getLayerIDsOnScreen(0, &length, &layers) == ILM_SUCCESS)
+		try
 		{
-			if (length)
+			sleep_for(milliseconds(100));
+
+			ilmScreenProperties screenProperties;
+
+			if (ilm_getPropertiesOfScreen(0, &screenProperties) == ILM_SUCCESS)
 			{
-				if (layers[length - 1] == mLayerId && !mIsOnTop)
+				if (screenProperties.layerCount)
 				{
-					mIsOnTop = true;
+					if (screenProperties.layerIds[screenProperties.layerCount - 1] ==
+						mLayerId && !mIsOnTop)
+					{
+						mIsOnTop = true;
 
-					LOG(mLog, DEBUG) << "Show";
-				}
-				else if (layers[length - 1] != mLayerId && mIsOnTop)
-				{
-					mIsOnTop = false;
+						LOG(mLog, DEBUG) << "Show";
 
-					LOG(mLog, DEBUG) << "Hide";
+						sendUserEvent(1);
+					}
+					else if (screenProperties.layerIds[screenProperties.layerCount - 1] !=
+							 mLayerId && mIsOnTop)
+					{
+						mIsOnTop = false;
+
+						LOG(mLog, DEBUG) << "Hide";
+
+						sendUserEvent(0);
+					}
 				}
+
+				free(screenProperties.layerIds);
 			}
-
-			free(layers);
+		}
+		catch(const std::exception& e)
+		{
+			LOG(mLog, ERROR) << e.what();
 		}
 	}
 }
