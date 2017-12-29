@@ -1,1 +1,1 @@
-# agl_be_launcher
+# Display backend AGL launcher
