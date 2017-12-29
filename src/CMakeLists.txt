@@ -23,6 +23,13 @@ pkg_check_modules(DBUS1 REQUIRED dbus-1)
 pkg_check_modules(DBUS_CPP REQUIRED dbus-cpp)
 pkg_check_modules(PROPERTIES_CPP REQUIRED properties-cpp)
 
+################################################################################
+# CFLAGS
+################################################################################
+
+string(REPLACE ";" " " DBUS1_CFLAGS_STR "${DBUS1_CFLAGS}")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DBUS1_CFLAGS_STR}")
 
 ################################################################################
 # Includes
@@ -56,5 +63,6 @@ target_link_libraries(${PROJECT_NAME}
 	${WAYLAND_EGL_LIBRARIES}
 	${EGL_LIBRARIES}
 	${ILM_CTRL_LIBRARIES}
+	${DBUS_CPP_LIBRARIES}
 	pthread
 )
