@@ -18,7 +18,11 @@ endif()
 
 pkg_check_modules(EGL egl REQUIRED)
 pkg_check_modules(WAYLAND_EGL wayland-egl REQUIRED)
-pkg_check_modules(GLESv2 glesv2 REQUIRED)
+
+pkg_check_modules(DBUS1 REQUIRED dbus-1)
+pkg_check_modules(DBUS_CPP REQUIRED dbus-cpp)
+pkg_check_modules(PROPERTIES_CPP REQUIRED properties-cpp)
+
 
 ################################################################################
 # Includes
@@ -51,6 +55,6 @@ target_link_libraries(${PROJECT_NAME}
 	${IVI_APP_LIBRARIES}
 	${WAYLAND_EGL_LIBRARIES}
 	${EGL_LIBRARIES}
-	${GLESv2_LIBRARIES}
 	${ILM_CTRL_LIBRARIES}
+	pthread
 )

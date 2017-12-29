@@ -25,9 +25,11 @@
 
 #include <xen/be/Exception.hpp>
 
-using XenBackend::Exception;
+using std::this_thread::sleep_for;
+using std::thread;
+using std::chrono::milliseconds;
 
-AglBeLauncher* AglBeLauncher::mInstance = nullptr;
+using XenBackend::Exception;
 
 /*******************************************************************************
  * AglBeLauncher
@@ -36,8 +38,8 @@ AglBeLauncher* AglBeLauncher::mInstance = nullptr;
 AglBeLauncher::AglBeLauncher() :
 	mSurfaceId(50),
 	mLayerId(102 * 100000 + getpid()),
-	mSurfaceCreated(false),
-	mLayerCreated(false),
+	mTerminate(false),
+	mIsOnTop(false),
 	mLog("AglBeLauncher")
 {
 	try
@@ -61,92 +63,11 @@ AglBeLauncher::~AglBeLauncher()
  * Private
  ******************************************************************************/
 
-void AglBeLauncher::sCreateNotification(ilmObjectType object, t_ilm_uint id,
-										t_ilm_bool created, void* data)
-{
-	mInstance->createNotification(object, id, created);
-}
-
-void AglBeLauncher::createNotification(ilmObjectType object, t_ilm_uint id,
-									   t_ilm_bool created)
-{
-	if (object == ILM_SURFACE && id == mSurfaceId && created)
-	{
-		LOG(mLog, DEBUG) << "Surface created";
-
-		auto ret = ilm_surfaceAddNotification(mSurfaceId, sSurfaceNotification);
-
-		if (ret == ILM_SUCCESS)
-		{
-			mSurfaceCreated = true;
-		}
-		else
-		{
-			LOG(mLog, ERROR) << "Can't register surface notification";
-		}
-	}
-
-	if (object == ILM_LAYER && id == mLayerId && created)
-	{
-		LOG(mLog, DEBUG) << "Layer created";
-
-		auto ret = ilm_layerAddNotification(mLayerId, sLayerNotification);
-
-		if (ret == ILM_SUCCESS)
-		{
-			mLayerCreated = true;
-		}
-		else
-		{
-			LOG(mLog, ERROR) << "Can't register layer notification";
-		}
-	}
-}
-
-void AglBeLauncher::sLayerNotification(t_ilm_layer layer,
-									   ilmLayerProperties* properties,
-									   t_ilm_notification_mask mask)
-{
-	mInstance->layerNotification(properties, mask);
-}
-
-void AglBeLauncher::layerNotification(ilmLayerProperties* properties,
-									  t_ilm_notification_mask mask)
-{
-	LOG(mLog, DEBUG) << "Layer notification: " << mask;
-}
-
-void AglBeLauncher::sSurfaceNotification(t_ilm_surface surface,
-										 ilmSurfaceProperties* properties,
-										 t_ilm_notification_mask mask)
-{
-	mInstance->surfaceNotification(properties, mask);
-}
-
-void AglBeLauncher::surfaceNotification(ilmSurfaceProperties* properties,
-										t_ilm_notification_mask mask)
-{
-	LOG(mLog, DEBUG) << "Surface notification: " << mask;
-
-	if (mask & ILM_NOTIFICATION_VISIBILITY)
-	{
-		LOG(mLog, DEBUG) << "Surface visibility: " << properties->visibility;
-	}
-}
-
 void AglBeLauncher::init()
 {
 	LOG(mLog, DEBUG) << "Init";
 
-	if (mInstance)
-	{
-		throw Exception("Only one instance of launcher is allowed", EEXIST);
-	}
-
-
 	LOG(mLog, DEBUG) << "Expected layer: " << mLayerId;
-
-	mInstance = this;
 
 	auto ret = ilm_init();
 
@@ -155,31 +76,52 @@ void AglBeLauncher::init()
 		throw Exception("Can't initialize ilm", ret);
 	}
 
-	ret = ilm_registerNotification(sCreateNotification, nullptr);
-
-	if (ret != ILM_SUCCESS)
-	{
-		throw Exception("Can't register notification", ret);
-	}
-
 	mSurface.createSurface(mSurfaceId, 1080, 1487);
+
+	mThread = thread(&AglBeLauncher::run, this);
 }
 
 void AglBeLauncher::release()
 {
 	LOG(mLog, DEBUG) << "Release";
 
-	if (mSurfaceCreated)
+	mTerminate = true;
+
+	if (mThread.joinable())
 	{
-		ilm_surfaceRemoveNotification(mSurfaceId);
+		mThread.join();
 	}
-
-	if (mLayerCreated)
-	{
-		ilm_layerRemoveNotification(mSurfaceId);
-	}
-
-	ilm_unregisterNotification();
-
 //	ilm_destroy();
+}
+
+void AglBeLauncher::run()
+{
+	while(!mTerminate)
+	{
+		sleep_for(milliseconds(100));
+
+		 t_ilm_int length;
+		 t_ilm_layer* layers;
+
+		if (ilm_getLayerIDsOnScreen(0, &length, &layers) == ILM_SUCCESS)
+		{
+			if (length)
+			{
+				if (layers[length - 1] == mLayerId && !mIsOnTop)
+				{
+					mIsOnTop = true;
+
+					LOG(mLog, DEBUG) << "Show";
+				}
+				else if (layers[length - 1] != mLayerId && mIsOnTop)
+				{
+					mIsOnTop = false;
+
+					LOG(mLog, DEBUG) << "Hide";
+				}
+			}
+
+			free(layers);
+		}
+	}
 }

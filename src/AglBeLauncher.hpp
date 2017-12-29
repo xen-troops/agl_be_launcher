@@ -22,6 +22,9 @@
 #ifndef SRC_AGLBELAUNCHER_HPP_
 #define SRC_AGLBELAUNCHER_HPP_
 
+#include <atomic>
+#include <thread>
+
 #include <ilm/ilm_control.h>
 #include <ilm/ilm_common.h>
 
@@ -37,31 +40,16 @@ private:
 	t_ilm_surface mSurfaceId;
 	t_ilm_layer mLayerId;
 	WlEglSurface mSurface;
-	bool mSurfaceCreated;
-	bool mLayerCreated;
+	std::atomic_bool mTerminate;
+	bool mIsOnTop;
 	XenBackend::Log mLog;
 
-	static AglBeLauncher* mInstance;
-
-	static void sCreateNotification(ilmObjectType object, t_ilm_uint id,
-									t_ilm_bool created, void* data);
-	void createNotification(ilmObjectType object, t_ilm_uint id,
-							t_ilm_bool created);
-
-	static void sLayerNotification(t_ilm_layer layer,
-								   ilmLayerProperties* properties,
-								   t_ilm_notification_mask mask);
-	void layerNotification(ilmLayerProperties* properties,
-						   t_ilm_notification_mask mask);
-
-	static void sSurfaceNotification(t_ilm_surface surface,
-									 ilmSurfaceProperties* properties,
-									 t_ilm_notification_mask mask);
-	void surfaceNotification(ilmSurfaceProperties* properties,
-							 t_ilm_notification_mask mask);
+	std::thread mThread;
 
 	void init();
 	void release();
+
+	void run();
 };
 
 #endif /* SRC_AGLBELAUNCHER_HPP_ */
