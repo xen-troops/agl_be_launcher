@@ -48,7 +48,7 @@ WlEglSurface::WlEglSurface() :
 	mEglConfig(0),
 	mEglSurface(EGL_NO_SURFACE),
 	mEglContext(EGL_NO_CONTEXT),
-	mLog("Display")
+	mLog("WlEglSurface")
 {
 	try
 	{
@@ -295,9 +295,9 @@ void WlEglSurface::releaseEGL()
 	{
 		eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 		eglTerminate(mEglDisplay);
-	}
 
-	wl_display_flush(mWlDisplay);
+		wl_display_flush(mWlDisplay);
+	}
 }
 
 void WlEglSurface::releaseSurface()
@@ -317,5 +317,8 @@ void WlEglSurface::releaseSurface()
 		wl_surface_destroy(mWlSurface);
 	}
 
-	wl_display_flush(mWlDisplay);
+	if (mWlDisplay)
+	{
+		wl_display_flush(mWlDisplay);
+	}
 }
