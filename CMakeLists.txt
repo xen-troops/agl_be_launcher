@@ -7,11 +7,14 @@ project(${PROJECT_NAME})
 ################################################################################
 # Options
 ################################################################################
+OPTION(WITH_WGT "create AGL widget" OFF)
 
 message(STATUS)
 message(STATUS "${PROJECT_NAME} Configuration:")
 message(STATUS "CMAKE_BUILD_TYPE              = ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_INSTALL_PREFIX          = ${CMAKE_INSTALL_PREFIX}")
+message(STATUS)
+message(STATUS "WITH_WGT                      = ${WITH_WGT}")
 message(STATUS)
 message(STATUS "XENBE_INCLUDE_PATH            = ${XENBE_INCLUDE_PATH}")
 message(STATUS)

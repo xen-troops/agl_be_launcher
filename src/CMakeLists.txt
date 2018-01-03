@@ -66,3 +66,25 @@ target_link_libraries(${PROJECT_NAME}
 	${DBUS_CPP_LIBRARIES}
 	pthread
 )
+
+################################################################################
+# Package
+################################################################################
+
+if(WITH_WGT)
+	set_target_properties(${PROJECT_NAME} PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/package/root/bin
+	)
+	
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy
+			${CMAKE_SOURCE_DIR}/package/config.xml
+			${CMAKE_BINARY_DIR}/package/root/config.xml
+		COMMAND ${CMAKE_COMMAND} -E copy
+			${CMAKE_SOURCE_DIR}/package/icon.svg
+			${CMAKE_BINARY_DIR}/package/root/icon.svg
+		COMMAND wgtpkg-pack -f -o
+			${CMAKE_BINARY_DIR}/package/${PROJECT_NAME}.wgt
+			${CMAKE_BINARY_DIR}/package/root/
+	)
+endif()
