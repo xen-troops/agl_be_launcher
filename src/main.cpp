@@ -28,7 +28,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#include "AglBeLauncher.hpp"
+#include "SurfaceSwitcher.hpp"
 
 using std::cout;
 using std::endl;
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
 		Log::setLogLevel(LogLevel::logDEBUG);
 
-		AglBeLauncher launcher;
+		SurfaceSwitcher switcher;
 
 		waitSignals();
 	}
