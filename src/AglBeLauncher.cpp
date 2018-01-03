@@ -89,7 +89,7 @@ void AglBeLauncher::init()
 	mBus = make_shared<Bus>(WellKnownBus::session);
 	mBus->install_executor(asio::make_executor(mBus));
 
-	auto service = Service::use_service_or_throw_if_not_available(mBus, "com.epam.DeviceManager");
+	auto service = Service::use_service_or_throw_if_not_available(mBus, "com.epam.DisplayManager");
 
 	mDBusThread = thread([this]() { mBus->run(); });
 
