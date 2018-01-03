@@ -139,7 +139,9 @@ void AglBeLauncher::run()
 
 			ilmScreenProperties screenProperties;
 
-			if (ilm_getPropertiesOfScreen(0, &screenProperties) == ILM_SUCCESS)
+			auto ret = ilm_getPropertiesOfScreen(0, &screenProperties);
+
+			if (ret == ILM_SUCCESS)
 			{
 				if (screenProperties.layerCount)
 				{
@@ -162,8 +164,21 @@ void AglBeLauncher::run()
 						sendUserEvent(0);
 					}
 				}
+				else
+				{
+					if (mIsOnTop)
+					{
+						LOG(mLog, DEBUG) << "Hide";
+
+						sendUserEvent(0);
+					}
+				}
 
 				free(screenProperties.layerIds);
+			}
+			else
+			{
+				throw Exception("Can't get screen properties", ret);
 			}
 		}
 		catch(const std::exception& e)
