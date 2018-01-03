@@ -41,7 +41,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DBUS1_CFLAGS_STR}")
 
 set(SOURCES
 	main.cpp
-	AglBeLauncher.cpp
+	SurfaceSwitcher.cpp
 	WlEglSurface.cpp
 )
 

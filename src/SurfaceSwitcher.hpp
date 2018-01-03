@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef SRC_AGLBELAUNCHER_HPP_
-#define SRC_AGLBELAUNCHER_HPP_
+#ifndef SRC_SURFACESWITCHER_HPP_
+#define SRC_SURFACESWITCHER_HPP_
 
 #include <atomic>
 #include <thread>
@@ -33,11 +33,11 @@
 
 #include "WlEglSurface.hpp"
 
-class AglBeLauncher
+class SurfaceSwitcher
 {
 public:
-	AglBeLauncher();
-	~AglBeLauncher();
+	SurfaceSwitcher();
+	~SurfaceSwitcher();
 
 private:
 	t_ilm_surface mSurfaceId;
@@ -62,4 +62,4 @@ private:
 	void run();
 };
 
-#endif /* SRC_AGLBELAUNCHER_HPP_ */
+#endif /* SRC_SURFACESWITCHER_HPP_ */

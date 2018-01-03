@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(PROJECT_NAME "agl_be_launcher")
+set(PROJECT_NAME "agl_surface_switcher")
 
 project(${PROJECT_NAME})
 

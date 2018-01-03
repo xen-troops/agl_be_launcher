@@ -19,8 +19,6 @@
  *
  */
 
-#include "AglBeLauncher.hpp"
-
 #include <core/dbus/asio/executor.h>
 
 #include <unistd.h>
@@ -28,6 +26,7 @@
 #include <xen/be/Exception.hpp>
 
 #include "DBusItfControl.hpp"
+#include "SurfaceSwitcher.hpp"
 
 using std::make_shared;
 using std::this_thread::sleep_for;
@@ -43,12 +42,12 @@ using namespace com::epam;
  * AglBeLauncher
  ******************************************************************************/
 
-AglBeLauncher::AglBeLauncher() :
+SurfaceSwitcher::SurfaceSwitcher() :
 	mSurfaceId(50),
 	mLayerId(102 * 100000 + getpid()),
 	mTerminate(false),
 	mIsOnTop(false),
-	mLog("AglBeLauncher")
+	mLog("SurfaceSwitcher")
 {
 	try
 	{
@@ -62,7 +61,7 @@ AglBeLauncher::AglBeLauncher() :
 	}
 }
 
-AglBeLauncher::~AglBeLauncher()
+SurfaceSwitcher::~SurfaceSwitcher()
 {
 	release();
 }
@@ -71,7 +70,7 @@ AglBeLauncher::~AglBeLauncher()
  * Private
  ******************************************************************************/
 
-void AglBeLauncher::init()
+void SurfaceSwitcher::init()
 {
 	LOG(mLog, DEBUG) << "Init";
 
@@ -96,10 +95,10 @@ void AglBeLauncher::init()
 	mDBusObject = service->object_for_path(
 			types::ObjectPath(DisplayManager::Control::default_path()));
 
-	mPollThread = thread(&AglBeLauncher::run, this);
+	mPollThread = thread(&SurfaceSwitcher::run, this);
 }
 
-void AglBeLauncher::release()
+void SurfaceSwitcher::release()
 {
 	LOG(mLog, DEBUG) << "Release";
 
@@ -122,14 +121,14 @@ void AglBeLauncher::release()
 
 //	ilm_destroy();
 }
-void AglBeLauncher::sendUserEvent(uint32_t event)
+void SurfaceSwitcher::sendUserEvent(uint32_t event)
 {
 	Result<void> result =
 			mDBusObject->transact_method<
 				DisplayManager::Control::userEvent, void>(event);
 }
 
-void AglBeLauncher::run()
+void SurfaceSwitcher::run()
 {
 	while(!mTerminate)
 	{
