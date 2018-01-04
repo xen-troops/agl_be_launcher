@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" id="dashboard" version="0.1">
-  <name>Dashboard</name>
-  <icon src="icon.svg"/>
+<widget xmlns="http://www.w3.org/ns/widgets" id="agl_surface_switcher" version="0.1">
+  <name>Android</name>
+  <icon src="icon.png"/>
   <content src="bin/agl_surface_switcher" type="application/x-executable"/>
   <description>This is a surface switcher for display backend</description>
   <author>epam</author>

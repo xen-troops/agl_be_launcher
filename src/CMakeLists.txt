@@ -81,8 +81,8 @@ if(WITH_WGT)
 			${CMAKE_SOURCE_DIR}/package/config.xml
 			${CMAKE_BINARY_DIR}/package/root/config.xml
 		COMMAND ${CMAKE_COMMAND} -E copy
-			${CMAKE_SOURCE_DIR}/package/icon.svg
-			${CMAKE_BINARY_DIR}/package/root/icon.svg
+			${CMAKE_SOURCE_DIR}/package/icon.png
+			${CMAKE_BINARY_DIR}/package/root/icon.png
 		COMMAND wgtpkg-pack -f -o
 			${CMAKE_BINARY_DIR}/package/${PROJECT_NAME}.wgt
 			${CMAKE_BINARY_DIR}/package/root/
