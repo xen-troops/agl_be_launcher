@@ -134,51 +134,58 @@ void SurfaceSwitcher::run()
 	{
 		try
 		{
-			sleep_for(milliseconds(100));
+			sleep_for(milliseconds(1000));
 
 			ilmScreenProperties screenProperties;
 
 			auto ret = ilm_getPropertiesOfScreen(0, &screenProperties);
 
-			if (ret == ILM_SUCCESS)
-			{
-				if (screenProperties.layerCount)
-				{
-					if (screenProperties.layerIds[screenProperties.layerCount - 1] ==
-						mLayerId && !mIsOnTop)
-					{
-						mIsOnTop = true;
-
-						LOG(mLog, DEBUG) << "Show";
-
-						sendUserEvent(1);
-					}
-					else if (screenProperties.layerIds[screenProperties.layerCount - 1] !=
-							 mLayerId && mIsOnTop)
-					{
-						mIsOnTop = false;
-
-						LOG(mLog, DEBUG) << "Hide";
-
-						sendUserEvent(0);
-					}
-				}
-				else
-				{
-					if (mIsOnTop)
-					{
-						LOG(mLog, DEBUG) << "Hide";
-
-						sendUserEvent(0);
-					}
-				}
-
-				free(screenProperties.layerIds);
-			}
-			else
+			if (ret != ILM_SUCCESS)
 			{
 				throw Exception("Can't get screen properties", ret);
 			}
+
+			if (screenProperties.layerCount)
+			{
+				bool isLayerFound = false;
+
+				for(t_ilm_uint i = 0; i < screenProperties.layerCount; i++)
+				{
+					if (screenProperties.layerIds[i] == mLayerId)
+					{
+						isLayerFound = true;
+					}
+				}
+
+				if (isLayerFound && !mIsOnTop)
+				{
+					mIsOnTop = true;
+
+					LOG(mLog, DEBUG) << "Show";
+
+					sendUserEvent(1);
+				}
+				else if (screenProperties.layerIds[screenProperties.layerCount - 1] !=
+						mLayerId && mIsOnTop)
+				{
+					mIsOnTop = false;
+
+					LOG(mLog, DEBUG) << "Hide";
+
+					sendUserEvent(0);
+				}
+			}
+			else
+			{
+				if (mIsOnTop)
+				{
+					LOG(mLog, DEBUG) << "Hide";
+
+					sendUserEvent(0);
+				}
+			}
+
+			free(screenProperties.layerIds);
 		}
 		catch(const std::exception& e)
 		{
