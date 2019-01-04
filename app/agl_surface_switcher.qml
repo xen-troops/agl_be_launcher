@@ -1,5 +1,5 @@
 /*
- *  AglLauncher class
+ *  AGL backend launcher
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,50 +16,21 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  *
  * Copyright (C) 2016 EPAM Systems Inc.
- *
  */
 
-#ifndef SRC_SURFACESWITCHER_HPP_
-#define SRC_SURFACESWITCHER_HPP_
+import QtQuick 2.6
+import QtQuick.Controls 2.0
 
-#include <atomic>
-#include <thread>
+ApplicationWindow {
+    id: root
+    width: container.width * container.scale
+    height: container.height * container.scale
 
-#include <ilm/ilm_control.h>
-#include <ilm/ilm_common.h>
-
-#include <core/dbus/dbus.h>
-#include <core/dbus/message.h>
-
-#include "WlEglSurface.hpp"
-
-class SurfaceSwitcher
-{
-public:
-	SurfaceSwitcher();
-	~SurfaceSwitcher();
-
-private:
-	t_ilm_surface mSurfaceId;
-	t_ilm_layer mLayerId;
-	WlEglSurface mSurface;
-	std::atomic_bool mTerminate;
-	bool mIsOnTop;
-	XenBackend::Log mLog;
-
-	std::thread mPollThread;
-
-	core::dbus::Bus::Ptr mBus;
-	core::dbus::Object::Ptr mDBusObject;
-	std::thread mDBusThread;
-
-
-	void init();
-	void release();
-
-	void sendUserEvent(uint32_t event);
-
-	void run();
-};
-
-#endif /* SRC_SURFACESWITCHER_HPP_ */
+    Item {
+        id: container
+        anchors.centerIn: parent
+        width: 1080
+        height: 1487
+        scale: screenInfo.scale_factor()
+    }
+}

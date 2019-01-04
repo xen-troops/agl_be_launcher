@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>agl_surface_switcher.qml</file>
+    </qresource>
+</RCC>
